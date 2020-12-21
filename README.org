@@ -1,0 +1,12 @@
+#+AUTHOR:  Chris Zheng
+#+EMAIL:   z@caudate.me
+#+OPTIONS: toc:nil
+#+STARTUP: showall
+
+* Introduction
+
+This is [[http://github.com/zcaudate/eta]][Eta]] - an /*emacs micro-framework*/ based around `bind-key` for easier customization of global, custom and non-overridable key-bindings. In addition, it provides well as a multimethod based dispatch for major modes, (suitable for defining non-overridable yet extensible key-bindings)
+
+
+
+
