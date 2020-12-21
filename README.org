@@ -5,7 +5,7 @@
 
 * Introduction
 
-This is [[http://github.com/zcaudate/eta]][Eta]] - an /*emacs micro-framework*/ based around `bind-key` for easier customization of global, custom and non-overridable key-bindings. In addition, it provides well as a multimethod based dispatch for major modes, (suitable for defining non-overridable yet extensible key-bindings)
+This is a *micro-framework* for customising key-bindings built on top of [[https://github.com/jwiegley/use-package/blob/master/bind-key.el][bind-key]]. It provides two macros for standardising and associating intent with key-bindings: a standard version `eta/bind` and multi-dispatch version for standardisation of functionality across major modes: `eta/mode`.
 
 
 
