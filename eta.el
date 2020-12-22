@@ -5,7 +5,7 @@
 ;; Author: Chris Zheng
 ;; Keywords: convenience, usability
 ;; Homepage: https://www.github.com/zcaudate/eta
-;; Package-Requires: ((emacs "25.1"))
+;; Package-Requires: ((emacs "25.1") (s "1.12.0") (ht "2.2"))
 ;; Version: 0.01
 
 ;;; License:
@@ -32,8 +32,8 @@
 
 ;;; Requirements:
 (require 's)     ;; string
-(require 'dash)  ;; list
 (require 'ht)    ;; maps
+(require 'seq)
 
 ;;; Code:
 
@@ -44,15 +44,16 @@
 (defvar eta-*mode-lookup*    (ht-create))
 
 ;; Macro Definitions
-(defun eta-let-fn (bindings body)
-  "Function to create the let macro form.
+(eval-when-compile
+  (defun eta-let-fn (bindings body)
+    "Function to create the let macro form.
 Argument BINDINGS let bindings.
 Optional argument BODY the let body."
-  (let ((bargs (seq-reverse (seq-partition bindings 2))))
-    (seq-reduce (lambda (body barg)
-                  (list '-let barg body))
-                bargs
-                (cons 'progn body))))
+    (let ((bargs (seq-reverse (seq-partition bindings 2))))
+      (seq-reduce (lambda (body barg)
+                    (list '-let barg body))
+                  bargs
+                  (cons 'progn body)))))
 
 (defmacro eta-let (bindings &rest body)
   "Let with multiple BINDINGS.
