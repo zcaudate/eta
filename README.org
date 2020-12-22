@@ -83,20 +83,20 @@ This type of standardisation can now be applied to one's Emacs setup.
 ;;... then later on ...
 
 ;; elisp mode
-(e-mode [::lisp     lisp-interaction-mode]
+(eta-mode [::lisp     lisp-interaction-mode]
   ::eval-cursor     'eval-last-sexp
   ::eval-file       'e/eval-buffer
   ::eval-cursor-alt 'pp-macroexpand-last-sexp)
 
 ;; org mode
-(e/mode [::org   org-mode]
+(eta-mode [::org   org-mode]
   ::eval-cursor     'org-ctrl-c-ctrl-c
   ::eval-cursor-alt 'e/org-babel-tangle-block
   ::mode-connect    'org-babel-tangle
   ::eval-file       nil)
 
 ;; elisp mode
-(e-mode [::clojure  cider-mode]
+(eta-mode [::clojure  cider-mode]
   ::eval-cursor     'cider-eval-last-sexp
   ::eval-file       'cider-eval-buffer
   ::eval-cursor-alt 'cider-macroexpand-last-sexp)
