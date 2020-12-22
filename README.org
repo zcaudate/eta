@@ -5,16 +5,28 @@
 
 ** Introduction
 
-This is a *micro-framework* for customising key-bindings built on top of [[https://github.com/jwiegley/use-package/blob/master/bind-key.el][bind-key]]. It provides two macros for standardising and associating intent with key-bindings: a standard version ~eta-bind~ and multi-dispatch version for standardisation of functionality across major modes: ~eta-mode-init~ and ~~eta-mode~.
+This is a *micro-framework* for customising key-bindings built on top
+of [[https://github.com/jwiegley/use-package/blob/master/bind-key.el][bind-key]]. It provides two macros for standardising and associating
+intent with key-bindings: a standard version ~eta-bind~ and
+multi-dispatch version for standardisation of functionality across
+major modes: ~eta-mode-init~ and ~~eta-mode~.
 
 
-Eta provides a indirection layer between the bindings and the implementation so that the intent of the user can be stated. 
+Eta provides a indirection layer between the bindings and the
+implementation so that the intent of the user can be stated.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC md.graph
 BINDINGS -> [ACTION or INTENT] -> IMPLEMENTATION
 #+END_SRC
 
-This leads to better organisation a cleaner binding definition and gives the user a bit more control over where the bindings are placed. Also, it makes migrating away from older libraries much less painful. Another features is the ability to have multiple keybindings for a given action. This is actually very useful in a lot of situations such as having multiple ways of accessing a commonly used feature with various hand positions and when minor modes override one binding, the feature is still available via another set of shortcuts.
+This leads to better organisation a cleaner binding definition and
+gives the user a bit more control over where the bindings are
+placed. Also, it makes migrating away from older libraries much less
+painful. Another features is the ability to have multiple keybindings
+for a given action. This is actually very useful in a lot of
+situations such as having multiple ways of accessing a commonly used
+feature with various hand positions and when minor modes override one
+binding, the feature is still available via another set of shortcuts.
 
 ** Usage
 
@@ -45,15 +57,21 @@ Let's to see these macros in action:
 
 *** ~eta-mode~
 
-It's easier to think of this as multimethods. ~eta-mode-init~ is akin to ~defmulti~ while ~eta-mode is akin to ~defmethod~.
+It's easier to think of this as using multimethods for major
+modes. ~eta-mode-init~ is akin to ~defmulti~ while ~eta-mode~ is akin
+to ~defmethod~. This allows actiovs that will be consistent across
+major modes.
+
+For example the default bindings in Eclipse are <F8> for build and
+<F6> for debug. ~Build~ and ~Debug~ are actions that can be reassigned
+key-bindings. Whether one is writing ~java~, ~c++~ or any other
+language, these actions are the same although the underlying
+implementation might be very different.
+
+This type of standardisation can now be applied to one's Emacs setup.
+
 
 #+BEGIN_SRC emacs-lisp
-;; Initialise operations that will be consistent across major modes
-;; This brings a bit more control back to the user as it allows 
-;; customisation to be more explicit and gives an IDE-ish feel to
-;; Emacs. <F8> is build for all languages in Eclipse. This type of
-;; standardisation can now be applied to one's Emacs setup.
-
 ;; ACTION              BINDINGS              INTERACTIVE PARAMS
 (eta-mode-init []
   ::mode-menu          ("<f8>")              ()
@@ -90,9 +108,16 @@ It's easier to think of this as multimethods. ~eta-mode-init~ is akin to ~defmul
 
 These are current libraries that attempt to solve the same problem:
 
-- [[https://github.com/jwiegley/use-package/blob/master/bind-key.el][Bind Key]] is what ~eta~ is built on. ~eta~ is essentially offerring a more conventient interface for ~bind-key~). Users wishing for more control (or more lines of code) can drop down to ~bind-key~.
+- [[https://github.com/jwiegley/use-package/blob/master/bind-key.el][Bind Key]] is what ~eta~ is built on. ~eta~ is essentially offerring a
+  more conventient interface for ~bind-key~). Users wishing for more
+  control (or more lines of code) can drop down to ~bind-key~.
 
-- [[https://github.com/jerrypnz/major-mode-hydra.el][Major Mode Hydra]] is a multimethod for only the one action. In this case, a user can define a `major-mode-hydra` key that brings up the hydra menu for the mode. It has a really nice library called ~pretty-hydra~ backing it's implemention. ~pretty-hydra~ and ~eta~ are used extensively in [[https://github.com/zcaudate/etude/blob/master/etude/core/etude-core-lisp.el#L37-L72][etude]] for modal menus (effectively emulatinig what Major Mode Hydra provides).
+- [[https://github.com/jerrypnz/major-mode-hydra.el][Major Mode Hydra]] is a multimethod for only the one action. In this
+  case, a user can define a `major-mode-hydra` key that brings up the
+  hydra menu for the mode. It has a really nice library called
+  ~pretty-hydra~ backing it's implemention. ~pretty-hydra~ and ~eta~
+  are used extensively in [[https://github.com/zcaudate/etude/blob/master/etude/core/etude-core-lisp.el#L37-L72][etude]] for modal menus (effectively
+  emulatinig what Major Mode Hydra provides).
 
 - [[https://github.com/noctuid/general.el][General]] does something similar.
 
