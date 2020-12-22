@@ -139,7 +139,7 @@ These are current libraries that attempt to solve the same problem:
     emulatinig what Major Mode Hydra provides).
 
 - [[https://github.com/noctuid/general.el][General]] does something similar.
-
+- [[https://github.com/countvajhula/rigpa][Rigpa]] This project is quite recent, very interesting and offers a framework for the user to build around as opposed to eta's whatever goes approach.
 
 
 
