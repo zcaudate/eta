@@ -5,8 +5,8 @@
 
 ** Introduction
 
-This is a *micro-framework* for customising key-bindings built on top
-of [[https://github.com/jwiegley/use-package/blob/master/bind-key.el][bind-key]]. It provides two macros for standardising and associating
+[[https://github.com/zcaudate/eta][eta]] a *micro-framework* for customising key-bindings built on top of
+[[https://github.com/jwiegley/use-package/blob/master/bind-key.el][bind-key]]. It provides two macros for standardising and associating
 intent with key-bindings: a standard version ~eta-bind~ and
 multi-dispatch version for standardisation of functionality across
 major modes: ~eta-mode-init~ and ~eta-mode~.
@@ -28,10 +28,9 @@ process. In the meantime, it can be installed directly via:
  '(eta :type git :host github :repo "zcaudate/eta")
 #+END_SRC
 
-
 ** Usage
 
-Let's to see these macros in action:
+Let's see these macros in action:
 
 *** ~eta-bind~
 
@@ -63,8 +62,8 @@ modes. ~eta-mode-init~ is akin to ~defmulti~ while ~eta-mode~ is akin
 to ~defmethod~. This allows actiovs that will be consistent across
 major modes.
 
-For example the default bindings in Eclipse are <F8> for build and
-<F6> for debug. ~Build~ and ~Debug~ are actions that can be reassigned
+For example the default bindings in Eclipse are ~<F8>~ for build and
+~<F6>~ for debug. ~Build~ and ~Debug~ are actions that can be reassigned
 key-bindings. Whether one is writing ~java~, ~c++~ or any other
 language, these actions are the same although the underlying
 implementation might be very different.
@@ -83,13 +82,13 @@ This type of standardisation can now be applied to one's Emacs setup.
 ;;... then later on ...
 
 ;; elisp mode
-(eta-mode [::lisp     lisp-interaction-mode]
+(eta-mode [::lisp   lisp-interaction-mode]
   ::eval-cursor     'eval-last-sexp
   ::eval-file       'e/eval-buffer
   ::eval-cursor-alt 'pp-macroexpand-last-sexp)
 
 ;; org mode
-(eta-mode [::org   org-mode]
+(eta-mode [::org    org-mode]
   ::eval-cursor     'org-ctrl-c-ctrl-c
   ::eval-cursor-alt 'e/org-babel-tangle-block
   ::mode-connect    'org-babel-tangle
@@ -104,8 +103,7 @@ This type of standardisation can now be applied to one's Emacs setup.
 ;; ... and so on ...
 #+END_SRC
 
-* Concept *
-
+* Concept
 
 ~eta~ provides a indirection layer between the bindings and the
 implementation so that the intent of the user can be stated.
@@ -117,7 +115,7 @@ BINDINGS -> [ACTION or INTENT] -> IMPLEMENTATION
 This leads to better organisation a cleaner binding definition and
 gives the user a bit more control over where the bindings are
 placed. It makes migrating away from older libraries much less
-painful. 
+painful.
 
 Another features is the ability to have multiple keybindings for a
 given action. This is extremely useful in a lot of situations:
@@ -126,20 +124,19 @@ given action. This is extremely useful in a lot of situations:
 - when minor modes override one binding, the feature is still
   available via another set of shortcuts.
 
-* Similar Libraries *
+* Similar Libraries
 
 These are current libraries that attempt to solve the same problem:
 
-- [[https://github.com/jwiegley/use-package/blob/master/bind-key.el][Bind Key]] is what ~eta~ is built on. ~eta~ is essentially offerring a
-  more conventient interface for ~bind-key~). Users wishing for more
-  control (or more lines of code) can drop down to ~bind-key~.
-
+- [[https://github.com/jwiegley/use-package/blob/master/bind-key.el][Bind Key]] is the go to binding library shipped as part of
+  ~use-package~. ~eta~ is essentially offerring a more conventient
+  interface for ~bind-key~).
 - [[https://github.com/jerrypnz/major-mode-hydra.el][Major Mode Hydra]] is a multimethod for only the one action. In this
   case, a user can define a ~major-mode-hydra~ key that brings up the
-  hydra menu for the mode. It has a really nice library called
-  ~pretty-hydra~ backing it's implemention. ~pretty-hydra~ and ~eta~
-  are used extensively in [[https://github.com/zcaudate/etude/blob/master/etude/core/etude-core-lisp.el#L37-L72][etude]] for modal menus (effectively
-  emulatinig what Major Mode Hydra provides).
+  hydra menu for the mode.
+  - This library is backed by ~pretty-hydra~. ~pretty-hydra~ and ~eta~
+    are used extensively in [[https://github.com/zcaudate/etude/blob/master/etude/core/etude-core-lisp.el#L37-L72][etude]] for modal menus (effectively
+    emulatinig what Major Mode Hydra provides).
 
 - [[https://github.com/noctuid/general.el][General]] does something similar.
 
