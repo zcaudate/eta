@@ -3,9 +3,44 @@
 #+OPTIONS: toc:nil
 #+STARTUP: showall
 
-* Introduction
+** Introduction
 
-This is a *micro-framework* for customising key-bindings built on top of [[https://github.com/jwiegley/use-package/blob/master/bind-key.el][bind-key]]. It provides two macros for standardising and associating intent with key-bindings: a standard version `eta/bind` and multi-dispatch version for standardisation of functionality across major modes: `eta/mode`.
+This is a *micro-framework* for customising key-bindings built on top of [[https://github.com/jwiegley/use-package/blob/master/bind-key.el][bind-key]]. It provides two macros for standardising and associating intent with key-bindings: a standard version `eta-bind` and multi-dispatch version for standardisation of functionality across major modes: `eta-mode`.
+
+** Motivation
+
+Eta was born out of the frustration of attempting to migrate key bindings over from ido to counsel amongst other packages. Given that both were narrowing utilities. Counsel was much more featured and so it seemed like the better choice (and it is).
+
+However, the initial migration was painful. Unfamiliarity with the api as well as the new functionality brought in by counsel caused many issues. New features should be a good thing but they came with new keybindings that overrode keybindings form other packages previously working with ido.
+
+** Overview
+
+Eta attempts to solve two problems experienced by Emacs Users - clashing minor modes keys and an absolute nightmare attempting to configure key bindings for them. It does so through a indirection layer that allows for better expression of intent.
+
+Instead of 
+
+```
+BINDINGS -> IMPLEMENTATION
+```
+
+Eta provides a indirection layer so that the intent is stated. This leads to a cleaner binding definition and gives the user a bit more control over where the bindings are placed. 
+
+
+```
+BINDINGS -> [INTENT (ETA)] -> IMPLEMENTATION
+```
+
+** Concrete example
+
+
+
+
+* Similar Libraries *
+
+These are similar libraries that attempt to solve the same problem:
+
+- https://github.com/jerrypnz/major-mode-hydra.el
+- https://github.com/noctuid/general.el
 
 
 
