@@ -11,8 +11,7 @@ intent with key-bindings: a standard version ~eta-bind~ and
 multi-dispatch version for standardisation of functionality across
 major modes: ~eta-mode-init~ and ~~eta-mode~.
 
-
-Eta provides a indirection layer between the bindings and the
+~eta~ provides a indirection layer between the bindings and the
 implementation so that the intent of the user can be stated.
 
 #+BEGIN_SRC md.graph
@@ -27,6 +26,24 @@ for a given action. This is actually very useful in a lot of
 situations such as having multiple ways of accessing a commonly used
 feature with various hand positions and when minor modes override one
 binding, the feature is still available via another set of shortcuts.
+
+** Installation
+
+~eta~ has been submitted to [[https://github.com/melpa/melpa/][Melpa]] and is going through the review
+process. In the meantime, it can be installed directly via:
+
+~quepa~
+#+BEGIN_SRC emacs-lisp
+(use-package eta :ensure t
+  :quelpa ((eta :fetcher github :repo "zcaudate/eta")))
+#+END_SRC
+
+~straight~ 
+#+BEGIN_SRC emacs-lisp
+(straight-use-package
+ '(eta :type git :host github :repo "zcaudate/eta")
+#+END_SRC
+
 
 ** Usage
 
@@ -113,7 +130,7 @@ These are current libraries that attempt to solve the same problem:
   control (or more lines of code) can drop down to ~bind-key~.
 
 - [[https://github.com/jerrypnz/major-mode-hydra.el][Major Mode Hydra]] is a multimethod for only the one action. In this
-  case, a user can define a `major-mode-hydra` key that brings up the
+  case, a user can define a ~major-mode-hydra~ key that brings up the
   hydra menu for the mode. It has a really nice library called
   ~pretty-hydra~ backing it's implemention. ~pretty-hydra~ and ~eta~
   are used extensively in [[https://github.com/zcaudate/etude/blob/master/etude/core/etude-core-lisp.el#L37-L72][etude]] for modal menus (effectively
