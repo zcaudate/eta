@@ -9,23 +9,7 @@ This is a *micro-framework* for customising key-bindings built on top
 of [[https://github.com/jwiegley/use-package/blob/master/bind-key.el][bind-key]]. It provides two macros for standardising and associating
 intent with key-bindings: a standard version ~eta-bind~ and
 multi-dispatch version for standardisation of functionality across
-major modes: ~eta-mode-init~ and ~~eta-mode~.
-
-~eta~ provides a indirection layer between the bindings and the
-implementation so that the intent of the user can be stated.
-
-#+BEGIN_SRC md.graph
-BINDINGS -> [ACTION or INTENT] -> IMPLEMENTATION
-#+END_SRC
-
-This leads to better organisation a cleaner binding definition and
-gives the user a bit more control over where the bindings are
-placed. Also, it makes migrating away from older libraries much less
-painful. Another features is the ability to have multiple keybindings
-for a given action. This is actually very useful in a lot of
-situations such as having multiple ways of accessing a commonly used
-feature with various hand positions and when minor modes override one
-binding, the feature is still available via another set of shortcuts.
+major modes: ~eta-mode-init~ and ~eta-mode~.
 
 ** Installation
 
@@ -120,6 +104,27 @@ This type of standardisation can now be applied to one's Emacs setup.
 ;; ... and so on ...
 #+END_SRC
 
+* Concept *
+
+
+~eta~ provides a indirection layer between the bindings and the
+implementation so that the intent of the user can be stated.
+
+#+BEGIN_SRC md.graph
+BINDINGS -> [ACTION or INTENT] -> IMPLEMENTATION
+#+END_SRC
+
+This leads to better organisation a cleaner binding definition and
+gives the user a bit more control over where the bindings are
+placed. It makes migrating away from older libraries much less
+painful. 
+
+Another features is the ability to have multiple keybindings for a
+given action. This is extremely useful in a lot of situations:
+
+- allow access to a commonly used feature at various hand positions
+- when minor modes override one binding, the feature is still
+  available via another set of shortcuts.
 
 * Similar Libraries *
 
