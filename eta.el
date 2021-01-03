@@ -5,7 +5,7 @@
 ;; Author: Chris Zheng
 ;; Keywords: convenience, usability
 ;; Homepage: https://www.github.com/zcaudate/eta
-;; Package-Requires: ((emacs "25.1") (s "1.12.0") (ht "2.2"))
+;; Package-Requires: ((emacs "25.1") (ht "2.2"))
 ;; Version: 0.01
 
 ;;; License:
