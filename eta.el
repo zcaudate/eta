@@ -1,4 +1,4 @@
-;;; eta.el --- Standard and multi dispatch key bind; -*-
+;;; eta.el --- Standard and multi dispatch key bind -*-
 
 ;; Copyright (C) Chris Zheng
 
@@ -27,21 +27,23 @@
 
 ;;; Commentary:
 ;;
-;; call docker build on org babel block
+;; Eta provides two macros for standardising and associating
+;; intent with key-bindings: a standard version `eta-bind` and
+;; multi-dispatch version for standardisation of functionality across
+;; major modes: `eta-modal-init` and `eta-modal`
 ;;
 
 ;;; Requirements:
-(require 's)     ;; string
 (require 'ht)    ;; maps
 (require 'seq)
 
 ;;; Code:
 
-(defvar eta-*lock* nil)
-(defvar eta-*commands*       (ht-create))
-(defvar eta-*mode-bindings*  (ht-create))
-(defvar eta-*mode-functions* (ht-create))
-(defvar eta-*mode-lookup*    (ht-create))
+(defvar eta-var-lock nil)
+(defvar eta-var-commands        (ht-create))
+(defvar eta-var-modal-bindings  (ht-create))
+(defvar eta-var-modal-functions (ht-create))
+(defvar eta-var-modal-lookup    (ht-create))
 
 ;; Macro Definitions
 (eval-when-compile
@@ -65,14 +67,14 @@ Optional argument BODY the let body."
   "Gets a command from hashtable.
 Argument KEY the command key.
 Argument FN the command function."
-  (if (and eta-*lock*
-           (ht-get eta-*commands* key))
-      (error (s-concat "key " (symbol-name key) " already exists"))
-    (ht-set eta-*commands* key fn)))
+  (if (and eta-var-lock
+           (ht-get eta-var-commands key))
+      (error (concat "key " (symbol-name key) " already exists"))
+    (ht-set eta-var-commands key fn)))
 
 (defun eta-get-command (key)
   "Gets a command function given KEY."
-  (gethash key eta-*commands*))
+  (gethash key eta-var-commands))
 
 ;;
 ;; eta-bind
@@ -87,14 +89,14 @@ Optional argument SPECS the actual bindings."
                     (seq-elt declaration 0))
          body (seq-mapcat (lambda (spec)
                             (eta-let [(key bindings fn) spec]
-                              (if fn
-                                  (progn (eta-put-command key (cadr fn))
-                                         (seq-map (lambda (binding)
-                                                    `(progn ,(if bind-map
-                                                                 `(bind-key ,binding ,fn ,bind-map)
-                                                               `(bind-key* ,binding ,fn))
-                                                            (vector ,key ,binding ,fn)))
-                                                  bindings)))))
+                              (when fn
+                                (eta-put-command key (cadr fn))
+                                (seq-map (lambda (binding)
+                                           `(progn ,(if bind-map
+                                                        `(bind-key ,binding ,fn ,bind-map)
+                                                      `(bind-key* ,binding ,fn))
+                                                   (vector ,key ,binding ,fn)))
+                                         bindings))))
                           (seq-partition specs 3))]
     (cons 'list body)))
 
@@ -106,105 +108,105 @@ Optional argument SPECS the actual bindings."
   (apply 'eta-bind-fn declaration specs))
 
 ;;
-;; setup for eta-mode
+;; setup for eta-modal
 ;;
-(defun eta-mode-key ()
+(defun eta-modal-key ()
   "The keys for a mode."
-  (ht-get eta-*mode-lookup* major-mode))
+  (ht-get eta-var-modal-lookup major-mode))
 
 
-(defun eta-mode-dispatch (fn-key &rest args)
+(defun eta-modal-dispatch (fn-key &rest args)
   "Function for mode dispatch.
 Argument FN-KEY the function key.
 Optional argument ARGS function arguments."
-  (eta-let [mode-key (ht-get eta-*mode-lookup* major-mode)
+  (eta-let [mode-key (ht-get eta-var-modal-lookup major-mode)
          fn-table (if mode-key
-                      (ht-get eta-*mode-functions* mode-key))
+                      (ht-get eta-var-modal-functions mode-key))
          fn       (if fn-table
                       (ht-get fn-table fn-key))]
     (if fn
         (apply 'funcall fn args)
-      (error (s-concat "Function unavailable ("
+      (error (concat "Function unavailable ("
                        (symbol-name mode-key)
                        " "
                        (symbol-name fn-key) ")")))))
 
 ;;
-;; eta-mode-init
+;; eta-modal-init
 ;;
 
-(defun eta-mode-init-create-mode-fn (fn-key bindings params)
+(defun eta-modal-init-create-mode-fn (fn-key bindings params)
   "Create a multi function.
 Argument FN-KEY the function key.
 Argument BINDINGS the bindings for the key.
 Argument PARAMS function params."
-  (eta-let [fn-name (intern (s-concat "eta-mode-fn"
+  (eta-let [fn-name (intern (concat "eta-modal-fn"
                                    (symbol-name fn-key)))
          args    (seq-map 'intern params)]
-    (ht-set eta-*mode-bindings* fn-key bindings)
+    (ht-set eta-var-modal-bindings fn-key bindings)
     `(progn (defun ,fn-name (,@args)
               (interactive ,@params)
-              (eta-mode-dispatch ,fn-key ,@args))
+              (eta-modal-dispatch ,fn-key ,@args))
             (eta-bind nil ,fn-key ,bindings (quote ,fn-name)))))
 
-(defun eta-mode-init-form (declaration &rest specs)
+(defun eta-modal-init-form (declaration &rest specs)
   "Initialises the mode form.
 Argument DECLARATION The mode form.
 Optional argument SPECS the mode specs."
   (eta-let [body (seq-map (lambda (args)
-                         (apply 'eta-mode-init-create-mode-fn args))
+                         (apply 'eta-modal-init-create-mode-fn args))
                        (seq-partition specs 3))]
     (cons 'progn body)))
 
-(defmacro eta-mode-init (declaration &rest specs)
+(defmacro eta-modal-init (declaration &rest specs)
   "The init macro.
 Argument DECLARATION The mode-init-macro.
 Optional argument SPECS the mode specs."
   (declare (indent 1))
-  (apply 'eta-mode-init-form declaration specs))
+  (apply 'eta-modal-init-form declaration specs))
 
 ;;
-;; eta-mode
+;; eta-modal
 ;;
 
-(defun eta-mode-create-config-fn (mode-key mode-name mode-config)
+(defun eta-modal-create-config-fn (mode-key mode-name mode-config)
   "The associated config file.
 Argument MODE-KEY the key of the mode.
 Argument MODE-NAME the mode name.
 Argument MODE-CONFIG the mode config."
-  (eta-let [fn-name   (intern (s-concat "eta-mode-config"
+  (eta-let [fn-name   (intern (concat "eta-modal-config"
                                         (symbol-name mode-key)))
-         mode-map  (intern (s-concat (symbol-name mode-name) "-map"))]
+         mode-map  (intern (concat (symbol-name mode-name) "-map"))]
     `(progn
        (defun ,fn-name ()
          (interactive)
          (eta-jump-to-config ,mode-config))
-       (bind-key eta-*meta-config* (quote ,fn-name) ,mode-map))))
+       (bind-key eta-var-meta-config (quote ,fn-name) ,mode-map))))
 
-(defun eta-mode-form (declaration &rest specs)
+(defun eta-modal-form (declaration &rest specs)
   "The mode form.
 Argument DECLARATION mode declaration.
 Optional argument SPECS mode specs."
   (eta-let [[mode-key mode-name &rest more] declaration
          mode-file-name (if (not (seq-empty-p more)) (seq-elt more 0))
          mode-table (ht-create)
-         _    (ht-set eta-*mode-functions* mode-key mode-table)
-         _    (ht-set eta-*mode-lookup* mode-name mode-key)
-         conf-body (eta-mode-create-config-fn mode-key mode-name (or mode-file-name load-file-name))
+         _    (ht-set eta-var-modal-functions mode-key mode-table)
+         _    (ht-set eta-var-modal-lookup mode-name mode-key)
+         conf-body (eta-modal-create-config-fn mode-key mode-name (or mode-file-name load-file-name))
          body      (seq-map (lambda (spec)
                               (eta-let [(fn-key fn) spec
-                                     mode-fn-key (intern (s-concat (symbol-name fn-key) (symbol-name mode-key)))]
+                                     mode-fn-key (intern (concat (symbol-name fn-key) (symbol-name mode-key)))]
                                 (ht-set mode-table fn-key (cadr fn))))
                             (seq-partition specs 2))]
     conf-body))
 
-(defmacro eta-mode (declaration config &rest specs)
-  "The eta mode macro.
-Argument DECLARATION The mode declaration.
+(defmacro eta-modal (declaration config &rest specs)
+  "The eta modal macro.
+Argument DECLARATION The modal declaration.
 Argument CONFIG the config.
 Optional argument SPECS mode specs."
   (declare (indent 1))
-  (apply 'eta-mode-form declaration config specs))
+  (apply 'eta-modal-form declaration config specs))
 
 (provide 'eta)
 ;;; eta.el ends here
