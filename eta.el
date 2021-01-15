@@ -1,4 +1,4 @@
-;;; eta.el --- Standard and multi dispatch key bind -*-
+;;; eta.el --- standard and multi dispatch key bind -*- lexical-binding: t -*-
 
 ;; Copyright (C) Chris Zheng
 
@@ -44,24 +44,7 @@
 (defvar eta-var-modal-bindings  (ht-create))
 (defvar eta-var-modal-functions (ht-create))
 (defvar eta-var-modal-lookup    (ht-create))
-
-;; Macro Definitions
-(eval-when-compile
-  (defun eta-let-fn (bindings body)
-    "Function to create the let macro form.
-Argument BINDINGS let bindings.
-Optional argument BODY the let body."
-    (let ((bargs (seq-reverse (seq-partition bindings 2))))
-      (seq-reduce (lambda (body barg)
-                    (list '-let barg body))
-                  bargs
-                  (cons 'progn body)))))
-
-(defmacro eta-let (bindings &rest body)
-  "Let with multiple BINDINGS.
-Optional argument BODY the let body."
-  (declare (indent 1))
-  (eta-let-fn bindings body))
+(defvar eta-var-meta-config     "ESC 0")
 
 (defun eta-put-command (key fn)
   "Gets a command from hashtable.
@@ -84,20 +67,20 @@ Argument FN the command function."
   "Function to generate bind form.
 Argument DECLARATION either *, <map> or empty.
 Optional argument SPECS the actual bindings."
-  (eta-let [bind-map (if (seq-empty-p declaration)
-                      nil
-                    (seq-elt declaration 0))
-         body (seq-mapcat (lambda (spec)
-                            (eta-let [(key bindings fn) spec]
-                              (when fn
-                                (eta-put-command key (cadr fn))
-                                (seq-map (lambda (binding)
-                                           `(progn ,(if bind-map
-                                                        `(bind-key ,binding ,fn ,bind-map)
-                                                      `(bind-key* ,binding ,fn))
-                                                   (vector ,key ,binding ,fn)))
-                                         bindings))))
-                          (seq-partition specs 3))]
+  (-let* ((bind-map (if (seq-empty-p declaration)
+                        nil
+                      (seq-elt declaration 0)))
+          (body (seq-mapcat (lambda (spec)
+                              (-let [(key bindings fn) spec]
+                                (when fn
+                                  (eta-put-command key (cadr fn))
+                                  (seq-map (lambda (binding)
+                                             `(progn ,(cond ((eq bind-map '*) `(bind-key* ,binding ,fn))
+                                                            (bind-map  `(bind-key ,binding ,fn ,bind-map))
+                                                            (t  `(bind-key ,binding ,fn)))
+                                                     (vector ,key ,binding ,fn)))
+                                           bindings))))
+                            (seq-partition specs 3))))
     (cons 'list body)))
 
 (defmacro eta-bind (declaration &rest specs)
@@ -119,11 +102,11 @@ Optional argument SPECS the actual bindings."
   "Function for mode dispatch.
 Argument FN-KEY the function key.
 Optional argument ARGS function arguments."
-  (eta-let [mode-key (ht-get eta-var-modal-lookup major-mode)
-         fn-table (if mode-key
-                      (ht-get eta-var-modal-functions mode-key))
-         fn       (if fn-table
-                      (ht-get fn-table fn-key))]
+  (let* ((mode-key (ht-get eta-var-modal-lookup major-mode))
+         (fn-table (if mode-key
+                       (ht-get eta-var-modal-functions mode-key)))
+         (fn       (if fn-table
+                       (ht-get fn-table fn-key))))
     (if fn
         (apply 'funcall fn args)
       (error (concat "Function unavailable ("
@@ -140,9 +123,9 @@ Optional argument ARGS function arguments."
 Argument FN-KEY the function key.
 Argument BINDINGS the bindings for the key.
 Argument PARAMS function params."
-  (eta-let [fn-name (intern (concat "eta-modal-fn"
-                                   (symbol-name fn-key)))
-         args    (seq-map 'intern params)]
+  (-let* ((fn-name (intern (concat "eta-modal-fn"
+                                   (symbol-name fn-key))))
+          (args    (seq-map 'intern params)))
     (ht-set eta-var-modal-bindings fn-key bindings)
     `(progn (defun ,fn-name (,@args)
               (interactive ,@params)
@@ -153,9 +136,9 @@ Argument PARAMS function params."
   "Initialises the mode form.
 Argument DECLARATION The mode form.
 Optional argument SPECS the mode specs."
-  (eta-let [body (seq-map (lambda (args)
-                         (apply 'eta-modal-init-create-mode-fn args))
-                       (seq-partition specs 3))]
+  (-let ((body (seq-map (lambda (args)
+                          (apply 'eta-modal-init-create-mode-fn args))
+                        (seq-partition specs 3))))
     (cons 'progn body)))
 
 (defmacro eta-modal-init (declaration &rest specs)
@@ -174,9 +157,9 @@ Optional argument SPECS the mode specs."
 Argument MODE-KEY the key of the mode.
 Argument MODE-NAME the mode name.
 Argument MODE-CONFIG the mode config."
-  (eta-let [fn-name   (intern (concat "eta-modal-config"
-                                        (symbol-name mode-key)))
-         mode-map  (intern (concat (symbol-name mode-name) "-map"))]
+  (-let* ((fn-name   (intern (concat "eta-modal-config"
+                                     (symbol-name mode-key))))
+          (mode-map  (intern (concat (symbol-name mode-name) "-map"))))
     `(progn
        (defun ,fn-name ()
          (interactive)
@@ -187,17 +170,17 @@ Argument MODE-CONFIG the mode config."
   "The mode form.
 Argument DECLARATION mode declaration.
 Optional argument SPECS mode specs."
-  (eta-let [[mode-key mode-name &rest more] declaration
-         mode-file-name (if (not (seq-empty-p more)) (seq-elt more 0))
-         mode-table (ht-create)
-         _    (ht-set eta-var-modal-functions mode-key mode-table)
-         _    (ht-set eta-var-modal-lookup mode-name mode-key)
-         conf-body (eta-modal-create-config-fn mode-key mode-name (or mode-file-name load-file-name))
-         body      (seq-map (lambda (spec)
-                              (eta-let [(fn-key fn) spec
-                                     mode-fn-key (intern (concat (symbol-name fn-key) (symbol-name mode-key)))]
-                                (ht-set mode-table fn-key (cadr fn))))
-                            (seq-partition specs 2))]
+  (-let* (([mode-key mode-name &rest more] declaration)
+          (mode-file-name (if (not (seq-empty-p more)) (seq-elt more 0)))
+          (mode-table (ht-create))
+          (_    (ht-set eta-var-modal-functions mode-key mode-table))
+          (_    (ht-set eta-var-modal-lookup mode-name mode-key))
+          (conf-body (eta-modal-create-config-fn mode-key mode-name (or mode-file-name load-file-name)))
+          (body      (seq-map (lambda (spec)
+                               (-let* (((fn-key fn) spec)
+                                       (mode-fn-key (intern (concat (symbol-name fn-key) (symbol-name mode-key)))))
+                                 (ht-set mode-table fn-key (cadr fn))))
+                             (seq-partition specs 2))))
     conf-body))
 
 (defmacro eta-modal (declaration config &rest specs)
