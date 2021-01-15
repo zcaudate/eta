@@ -13,19 +13,11 @@ major modes: ~eta-modal-init~ and ~eta-modal~.
 
 ** Installation
 
-~eta~ has been submitted to [[https://github.com/melpa/melpa/][Melpa]] and is going through the review
-process. In the meantime, it can be installed directly via:
+Install from Melpa:
 
 ~quepa~
 #+BEGIN_SRC emacs-lisp
-(use-package eta :ensure t
-  :quelpa ((eta :fetcher github :repo "zcaudate/eta")))
-#+END_SRC
-
-~straight~ 
-#+BEGIN_SRC emacs-lisp
-(straight-use-package
- '(eta :type git :host github :repo "zcaudate/eta")
+(use-package eta :ensure t)
 #+END_SRC
 
 ** Usage
